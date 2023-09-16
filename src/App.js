@@ -1,6 +1,26 @@
 import React, { Component } from 'react';
 import './App.css';
 
+// Employee class to encapsulate employee data
+class Employee {
+  constructor(id, name) {
+    this.id = id;
+    this.name = name
+      .split(' ')
+      .map((word) => this.capitalizeFirstLetter(word))
+      .join(' ');
+    this.clockIn = '';
+    this.clockOut = '';
+    this.isClockInDisabled = false;
+    this.isClockOutDisabled = true;
+  }
+
+  // Method to capitalize the first letter of a string
+  capitalizeFirstLetter = (str) => {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  };
+}
+
 class App extends Component {
   constructor() {
     super();
@@ -34,11 +54,6 @@ class App extends Component {
     this.setState({ currentEmployee: event.target.value });
   };
 
-  // Function to capitalize the first letter of a string
-  capitalizeFirstLetter = (str) => {
-    return str.charAt(0).toUpperCase() + str.slice(1);
-  };
-
   // Function to add a new employee
   addEmployee = () => {
     const { currentEmployee, employees } = this.state;
@@ -64,17 +79,7 @@ class App extends Component {
         throw new Error("The employee name already exists.");
       }
 
-      const newEmployee = {
-        id: employees.length + 1, // ID starts from 1
-        name: currentEmployee
-          .split(' ')
-          .map((word) => this.capitalizeFirstLetter(word))
-          .join(' '),
-        clockIn: '',
-        clockOut: '',
-        isClockInDisabled: false,
-        isClockOutDisabled: true,
-      };
+      const newEmployee = new Employee(employees.length + 1, currentEmployee);
       employees.push(newEmployee);
 
       this.setState({
@@ -83,6 +88,10 @@ class App extends Component {
       });
     } catch (error) {
       alert(error.message);
+    }
+    finally {
+      // Clear the input field in both success and error cases
+      this.setState({ currentEmployee: '' });
     }
   };
 
@@ -125,6 +134,11 @@ class App extends Component {
   deleteEmployee = (index) => {
     const { employees } = this.state;
     employees.splice(index, 1);
+
+    // Update the IDs of the remaining employees
+    employees.forEach((employee, i) => {
+      employee.id = i + 1;
+    });
 
     this.setState({
       employees,

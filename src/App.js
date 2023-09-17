@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import * as XLSX from 'xlsx';
 import './App.css';
 
 // Employee class to encapsulate employee data
@@ -27,15 +28,18 @@ class App extends Component {
     this.state = {
       employees: [],
       currentEmployee: '',
+      currentDay: '',
+      currentDate: '',
       currentTime: '',
       isClockInDisabled: false,
       isClockOutDisabled: true,
+      isDownloadDisabled: true,
     };
   }
 
   componentDidMount() {
     // Set an interval to update the current time every second
-    this.intervalID = setInterval(this.updateTime, 1000);
+    this.intervalID = setInterval(this.updateDayAndDate, 1000);
   }
 
   componentWillUnmount() {
@@ -43,10 +47,18 @@ class App extends Component {
     clearInterval(this.intervalID);
   }
 
-  // Function to update the current time
-  updateTime = () => {
-    const currentTime = new Date().toLocaleTimeString();
-    this.setState({ currentTime });
+  // Function to update the current date and time
+  updateDayAndDate = () => {
+    const now = new Date();
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    const formattedDate = now.toLocaleDateString(undefined, options);
+    const formattedTime = now.toLocaleTimeString();
+
+    this.setState({
+      currentDay: formattedDate.split(',')[0], // Extract the day (e.g., "Monday")
+      currentDate: formattedDate, // Full date (e.g., "Monday, September 19, 2023")
+      currentTime: formattedTime, // Formatted time (e.g., "12:34:56 PM")
+    });
   };
 
   // Function to handle input field changes
@@ -85,6 +97,7 @@ class App extends Component {
       this.setState({
         employees,
         currentEmployee: '',
+        isDownloadDisabled: false,
       });
     } catch (error) {
       alert(error.message);
@@ -142,19 +155,66 @@ class App extends Component {
 
     this.setState({
       employees,
+      isDownloadDisabled: employees.length === 0,
     });
+  };
+
+  // Function to calculate total work hours
+  calculateTotalHours = (clockIn, clockOut) => {
+    if (!clockIn || !clockOut) {
+      return '';
+    }
+
+    const startTime = new Date(`01/01/2023 ${clockIn}`);
+    const endTime = new Date(`01/01/2023 ${clockOut}`);
+    const timeDiff = endTime - startTime;
+
+    const hours = Math.floor(timeDiff / 1000 / 60 / 60);
+    const minutes = Math.floor((timeDiff / 1000 / 60) % 60);
+
+    return `${hours} hours ${minutes} minutes`;
+  };
+
+  // Function to export data to Excel
+  exportToExcel = () => {
+    const { employees } = this.state;
+
+    // Get the current date in DD/MM/YYYY format
+    const currentDateFormat = new Date().toLocaleDateString('en-GB'); // Format: "DD/MM/YYYY"
+
+    // Transform employee data into the appropriate format for Excel
+    const data = employees.map((employee) => ({
+      ID: employee.id,
+      'Name': employee.name,
+      'Clock-In': employee.clockIn || 'Not Clocked In',
+      'Clock-Out': employee.clockOut || 'Not Clocked Out',
+      Total: this.calculateTotalHours(employee.clockIn, employee.clockOut),
+    }));
+
+    // Create an Excel sheet from the data
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Attendance History');
+
+    // Include the date in the Excel file name
+    const fileName = `attendance_history_${currentDateFormat}.xlsx`;
+
+    // Save the Excel file with the appropriate name
+    XLSX.writeFile(wb, fileName);
   };
 
   render() {
     const {
       currentEmployee,
       employees,
+      currentDate,
       currentTime,
     } = this.state;
 
     return (
       <div className="App">
         <h1>Employee Attendance Tracker App</h1>
+        <div className="current-time">{currentDate}</div>
         <div className="current-time">Current Time: {currentTime}</div>
 
         <div className="container">
@@ -177,6 +237,14 @@ class App extends Component {
 
         <div className="attendance-list">
           <h2>Employee List</h2>
+          <button
+            onClick={this.exportToExcel}
+            disabled={this.state.isDownloadDisabled}
+            style={{ width: '25%' }}
+          >
+            Download Excel
+          </button>
+          <p></p>
           <table>
             <thead>
               <tr>
@@ -184,6 +252,7 @@ class App extends Component {
                 <th>Employee Name</th>
                 <th>Clock In</th>
                 <th>Clock Out</th>
+                <th>Total</th>
                 <th>Action</th>
               </tr>
             </thead>
@@ -194,6 +263,7 @@ class App extends Component {
                   <td>{employee.name}</td>
                   <td>{employee.clockIn || 'Not Clocked In'}</td>
                   <td>{employee.clockOut || 'Not Clocked Out'}</td>
+                  <td>{this.calculateTotalHours(employee.clockIn, employee.clockOut)}</td>
                   <td>
                     <button
                       onClick={() => this.markAttendance(index, 'Clock In')}

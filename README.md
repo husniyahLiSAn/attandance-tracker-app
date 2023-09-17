@@ -41,7 +41,7 @@ The Employee Attendance Tracker App provides the following features, highlightin
 4. **Export to Excel**
    - You can export the attendance data to an Excel file by clicking the "Download Excel" button.
    - The exported Excel file includes columns for ID, Employee Name, Clock-In Time, Clock-Out Time, and Total Work Hours.
-   - The file name includes the current date in the format "attendance_history_DD/MM/YYYY.xlsx."
+   - The file name includes the current date in the format "attendance_history_DD_MM_YYYY.xlsx."
 
 5. **Real-time Clocking**: The app displays the current time on the user interface, updating it every second through an interval implemented using `setInterval`.
 
@@ -59,7 +59,7 @@ The app is implemented using React and includes the following key features:
 
 - **Switch Statements**: Switch statements are used to handle different actions such as clocking in, clocking out, and marking attendance.
 
-- **Try-Catch-Finally Statements**: Try-catch-finally blocks are used for error handling during employee addition and attendance marking. Errors are displayed as alerts, and input fields are cleared in both success and error cases.
+- **Try-Catch-Finally Statements**: Try-catch-finally blocks are used for error handling during employee addition and attendance marking. Errors are displayed as alerts and input fields are cleared in both success and error cases.
 
 ## Getting Started
 
@@ -77,7 +77,7 @@ To get started with the Employee Attendance Tracker App, follow these steps:
 
 ## Usage
 
-1. Enter the employee's name in the input field and click "Add" to add a new employee or can by enter. Ensure the name meets the validation criteria.
+1. Enter the employee's name in the input field and click "Add" to add a new employee or click enter on your keyboard. Ensure the name meets the validation criteria.
 
 2. To record an employee's clock-in time, click the "Clock In" button next to their name. The button will be disabled once the employee has clocked in.
 
@@ -85,7 +85,7 @@ To get started with the Employee Attendance Tracker App, follow these steps:
 
 4. To delete an employee from the list, click the "Delete" button  next to their name in the table. The employee will be removed from the list, and the IDs of the remaining employees will be updated automatically.
 
-5. To download records from the database, click the "Download" button. The button will be enabled once the table has data and disabled if the table is empty.
+5. To download records from the database, click the "Download Excel" button. The button will be enabled once the table has data and disabled if the table is empty.
 
 ## Author
 
